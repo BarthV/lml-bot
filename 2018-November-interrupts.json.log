@@ -1,2 +1,3 @@
-{"duration":"65","category":"HW","fqdn":"test.lol"}
-{"duration":"15","category":"SW","fqdn":"ceci.est.un.serveur.crto.in"}
+{"epochDate":1543595352,"duration":55,"category":"HW","fqdn":"un.serveur.crto.in"}
+{"epochDate":1543595356,"duration":120,"category":"OTHER","fqdn":"autre.serveur.crto.in"}
+{"epochDate":1543595364,"duration":15,"category":"SW","fqdn":"ceci.est.un.serveur.crto.in"}
