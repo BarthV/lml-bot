@@ -99,6 +99,10 @@ func main() {
 			conv.Reply(":warning: *Impossible to parse duration*, please use https://golang.org/pkg/time/#ParseDuration format")
 			return
 		}
+		if duration <= time.Duration(0) {
+			conv.Reply(":genius:  *I tried to spend negative time at work ...* It didn't worked well")
+			return
+		}
 
 		fqdn, err := conv.String("fqdn")
 		if err != nil {
