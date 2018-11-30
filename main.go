@@ -1,0 +1,96 @@
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"log"
+	"os"
+	"time"
+
+	"github.com/sbstjn/hanu"
+)
+
+type interrupt struct {
+	Duration string `json:"duration"`
+	Category string `json:"category"`
+	Fqdn     string `json:"fqdn"`
+}
+
+func storeInterrupt(d time.Duration, c string, s string) error {
+	interruptItem := interrupt{
+		Duration: fmt.Sprint(int(d.Minutes())),
+		Category: c,
+		Fqdn:     s,
+	}
+
+	content, err := json.Marshal(interruptItem)
+	if err != nil {
+		return fmt.Errorf("Impossible to marshal JSON")
+	}
+	content = append(content, byte('\n'))
+
+	now := time.Now()
+	filename := fmt.Sprintf("./%v-%s-interrupts.json.log", now.Year(), now.Month().String())
+
+	f, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return fmt.Errorf("Impossible to open JSON log file")
+	}
+	defer f.Close()
+
+	if _, err = f.Write(content); err != nil {
+		return fmt.Errorf("Impossible to append JSON log to interrupt list")
+	}
+
+	return nil
+}
+
+func main() {
+	slack, err := hanu.New("xoxb-2329760138-492206823714-65HGOTf3fqOoPRRqGZgNSqX4")
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	Version := "0.1.1"
+
+	slack.Command("add <duration:string> <fqdn:string> (HW|SW|OTHER|UNK)", func(conv hanu.ConversationInterface) {
+		durationStr, err := conv.String("duration")
+		if err != nil {
+			conv.Reply(":warning: *Impossible to parse duration arg.*")
+			return
+		}
+		duration, err := time.ParseDuration(durationStr)
+		if err != nil {
+			conv.Reply(":warning: *Impossible to parse duration*, please use https://golang.org/pkg/time/#ParseDuration format")
+			return
+		}
+
+		fqdn, err := conv.String("fqdn")
+		if err != nil {
+			conv.Reply(":warning: *Impossible to parse fqdn.* If you cannot specify it please use `nocomment` as a placeholder")
+			return
+		}
+
+		category, err := conv.Match(2)
+		if err != nil {
+			conv.Reply(":warning: *Impossible to parse category.*")
+			return
+		}
+
+		err = storeInterrupt(duration, category, fqdn)
+		if err != nil {
+			conv.Reply(":skull_and_crossbones: *Impossible to store new interrupt.* Please check this bot health ! " + err.Error())
+			return
+		}
+
+		slackMsg := fmt.Sprintf(":heavy_check_mark: *New interrupt successfully registered:* `%s` - `%s`", duration.String(), fqdn)
+		conv.Reply(slackMsg)
+	})
+
+	slack.Command("version", func(conv hanu.ConversationInterface) {
+		conv.Reply("Thanks for asking! I'm running `%s`", Version)
+	})
+
+	slack.Listen()
+}
