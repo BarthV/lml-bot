@@ -52,7 +52,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	Version := "0.1.1"
+	Version := "0.1.2-dev"
 
 	slack.Command("add <duration:string> <fqdn:string> (HW|SW|OTHER|UNK)", func(conv hanu.ConversationInterface) {
 		durationStr, err := conv.String("duration")
