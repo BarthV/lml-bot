@@ -80,13 +80,13 @@ func storeInterrupt(d time.Duration, c string, s string) error {
 }
 
 func main() {
-	slack, err := hanu.New("xoxb-2329760138-492206823714-65HGOTf3fqOoPRRqGZgNSqX4")
+	slack, err := hanu.New(os.Getenv("SLACK_BOT_TOKEN"))
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	Version := "0.1.3-dev"
+	Version := "0.1.3"
 
 	slack.Command("add <duration:string> <fqdn:string> (HW|SW|OTHER|UNK)", func(conv hanu.ConversationInterface) {
 		durationStr, err := conv.String("duration")
